@@ -19,9 +19,9 @@ if [ ! -f "Dockerfile" ]; then
     exit 1
 fi
 
-# Build the Docker image
-echo "🔨 Building Docker image..."
-docker build -t cryptospins-api:$IMAGE_TAG .
+# Build the Docker image for AMD64 architecture (EKS nodes)
+echo "🔨 Building Docker image for AMD64 architecture..."
+docker build --platform linux/amd64 -t cryptospins-api:$IMAGE_TAG .
 
 # Login to ECR
 echo "🔐 Logging into ECR..."
