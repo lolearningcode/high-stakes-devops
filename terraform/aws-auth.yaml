@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapUsers: |
+    - userarn: arn:aws:iam::269599744150:user/itadmin-terraform
+      username: itadmin-terraform
+      groups:
+        - system:masters

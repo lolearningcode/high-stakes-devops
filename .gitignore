@@ -1,0 +1,79 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Terraform plan files
+*.tfplan
+*.plan
+
+# Sensitive files
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# AWS credentials
+.aws/
+aws-credentials
+credentials
+
+# Kubernetes config
+kubeconfig
+*.kubeconfig
+.kube/config
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# ArgoCD temporary files
+argocd-*
+argo-*
+
+# Helm
+*.tgz
+charts/*/charts/
+charts/*/requirements.lock
+
+# Git
+*.orig
+
+# Temporary directories
+tmp/
+temp/

@@ -1,0 +1,120 @@
+# EKS Module Outputs
+# Cluster Information
+output "cluster_arn" {
+  description = "The Amazon Resource Name (ARN) of the cluster"
+  value       = module.eks.cluster_arn
+}
+
+output "cluster_id" {
+  description = "The ID of the EKS cluster"
+  value       = module.eks.cluster_id
+}
+
+output "cluster_name" {
+  description = "The name of the EKS cluster"
+  value       = module.eks.cluster_name
+}
+
+output "cluster_endpoint" {
+  description = "Endpoint for EKS control plane"
+  value       = module.eks.cluster_endpoint
+}
+
+output "cluster_version" {
+  description = "The Kubernetes version for the EKS cluster"
+  value       = module.eks.cluster_version
+}
+
+output "cluster_platform_version" {
+  description = "Platform version for the EKS cluster"
+  value       = module.eks.cluster_platform_version
+}
+
+output "cluster_status" {
+  description = "Status of the EKS cluster. One of `CREATING`, `ACTIVE`, `DELETING`, `FAILED`"
+  value       = module.eks.cluster_status
+}
+
+# Security Groups
+output "cluster_security_group_id" {
+  description = "Cluster security group that was created by Amazon EKS for the cluster"
+  value       = module.eks.cluster_security_group_id
+}
+
+output "cluster_primary_security_group_id" {
+  description = "Cluster primary security group ID that was created by Amazon EKS for the cluster"
+  value       = module.eks.cluster_primary_security_group_id
+}
+
+output "node_security_group_id" {
+  description = "ID of the node shared security group"
+  value       = module.eks.node_security_group_id
+}
+
+# Certificate Authority
+output "cluster_certificate_authority_data" {
+  description = "Base64 encoded certificate data required to communicate with the cluster"
+  value       = module.eks.cluster_certificate_authority_data
+}
+
+# OIDC Provider
+output "cluster_oidc_issuer_url" {
+  description = "The URL on the EKS cluster for the OpenID Connect identity provider"
+  value       = module.eks.cluster_oidc_issuer_url
+}
+
+output "oidc_provider_arn" {
+  description = "The ARN of the OIDC Provider if `enable_irsa = true`"
+  value       = module.eks.oidc_provider_arn
+}
+
+# Node Groups
+output "eks_managed_node_groups" {
+  description = "Map of attribute maps for all EKS managed node groups created"
+  value       = module.eks.eks_managed_node_groups
+}
+
+output "eks_managed_node_groups_autoscaling_group_names" {
+  description = "List of the autoscaling group names created by EKS managed node groups"
+  value       = module.eks.eks_managed_node_groups_autoscaling_group_names
+}
+
+# Fargate
+output "fargate_profiles" {
+  description = "Map of attribute maps for all EKS Fargate profiles created"
+  value       = module.eks.fargate_profiles
+}
+
+# IAM Roles
+output "cluster_iam_role_name" {
+  description = "IAM role name associated with EKS cluster"
+  value       = module.eks.cluster_iam_role_name
+}
+
+output "cluster_iam_role_arn" {
+  description = "IAM role ARN associated with EKS cluster"
+  value       = module.eks.cluster_iam_role_arn
+}
+
+# CloudWatch Log Group
+output "cloudwatch_log_group_name" {
+  description = "Name of cloudwatch log group created"
+  value       = module.eks.cloudwatch_log_group_name
+}
+
+output "cloudwatch_log_group_arn" {
+  description = "Arn of cloudwatch log group created"
+  value       = module.eks.cloudwatch_log_group_arn
+}
+
+# Cluster Addons
+output "cluster_addons" {
+  description = "Map of attribute maps for all EKS cluster addons enabled"
+  value       = module.eks.cluster_addons
+}
+
+# EBS CSI Driver IAM Role
+output "ebs_csi_iam_role_arn" {
+  description = "ARN of the EBS CSI driver IAM role"
+  value       = aws_iam_role.ebs_csi_role.arn
+}
