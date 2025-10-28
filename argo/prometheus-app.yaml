@@ -3,15 +3,20 @@ kind: Application
 metadata:
   name: prometheus-stack
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: "ServerSideApply=true"
 spec:
   project: default
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 61.3.0
+    targetRevision: 58.5.3  
     helm:
       releaseName: kube-prom
+      skipCrds: false  # Ensure CRDs are installed
       values: |
+        crds:
+          enabled: true
         grafana:
           adminPassword: admin123
           service:
@@ -22,6 +27,12 @@ spec:
           prometheusSpec:
             serviceMonitorSelectorNilUsesHelmValues: false
             retention: 7d
+        alertmanager:
+          enabled: true
+        kubeStateMetrics:
+          enabled: true
+        nodeExporter:
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -29,3 +40,7 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true
