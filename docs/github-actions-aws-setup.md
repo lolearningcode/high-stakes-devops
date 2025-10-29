@@ -6,6 +6,54 @@ This document explains how to configure AWS credentials for GitHub Actions to en
 
 ### Step 1: Create AWS IAM User
 
+Choose your preferred setup method:
+
+#### Option A: Automated Script (Easiest) ✨
+
+```bash
+# Run the automated setup script
+./scripts/setup-github-actions-aws.sh
+```
+
+This script will:
+- ✅ Check AWS CLI configuration
+- ✅ Create IAM user with proper permissions
+- ✅ Generate access keys
+- ✅ Display formatted output for GitHub secrets
+- ✅ Handle existing users gracefully
+
+#### Option B: Manual CLI (Recommended for learning) 🚀
+
+```bash
+# 1. Create the IAM user
+aws iam create-user --user-name github-actions-cryptospins
+
+# 2. Attach ECR permissions
+aws iam attach-user-policy \
+  --user-name github-actions-cryptospins \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+
+# 3. Attach EKS permissions (optional, for K8s deployments)
+aws iam attach-user-policy \
+  --user-name github-actions-cryptospins \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+
+# 4. Create access key and save the output
+aws iam create-access-key --user-name github-actions-cryptospins
+
+# Output will show:
+# {
+#     "AccessKey": {
+#         "UserName": "github-actions-cryptospins",
+#         "AccessKeyId": "AKIA...",      # ← Copy this
+#         "Status": "Active",
+#         "SecretAccessKey": "abcd..."   # ← Copy this (shown only once!)
+#     }
+# }
+```
+
+#### Option B: Console Method
+
 1. **Go to AWS IAM Console**
    - Navigate to [IAM Users](https://console.aws.amazon.com/iam/home#/users)
    - Click "Add users"
@@ -48,7 +96,21 @@ Once credentials are added, the GitHub Actions workflow will:
 - ✅ Push images to ECR on successful main branch builds
 - ✅ Update Kubernetes deployment files automatically
 
-## 🔧 Manual ECR Operations
+## 🔧 CLI Verification & Management
+
+### Verify IAM User Setup
+```bash
+# Check if user exists
+aws iam get-user --user-name github-actions-cryptospins
+
+# List attached policies
+aws iam list-attached-user-policies --user-name github-actions-cryptospins
+
+# List access keys
+aws iam list-access-keys --user-name github-actions-cryptospins
+```
+
+### Manual ECR Operations
 
 If you need to manually push images before setting up GitHub Actions:
 
@@ -60,6 +122,20 @@ aws ecr get-login-password --region us-east-1 | \
 # Build and push
 cd api/
 ./build-and-push.sh
+```
+
+### Cleanup (if needed)
+```bash
+# Delete access key (get AccessKeyId from list-access-keys above)
+aws iam delete-access-key --user-name github-actions-cryptospins --access-key-id AKIA...
+
+# Detach policies
+aws iam detach-user-policy \
+  --user-name github-actions-cryptospins \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+
+# Delete user
+aws iam delete-user --user-name github-actions-cryptospins
 ```
 
 ## 🚫 Security Best Practices
