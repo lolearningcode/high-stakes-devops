@@ -75,7 +75,9 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Configure AWS credentials
+    - name: Configure AWS credentials (if available)
+      id: aws-creds
+      if: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' }}
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -84,22 +86,35 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
+      if: steps.aws-creds.outcome == 'success'
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build and push Docker image
+    - name: Build Docker image (no push if no AWS creds)
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry || '269599744150.dkr.ecr.us-east-1.amazonaws.com' }}
         ECR_REPOSITORY: cryptospins-api
         IMAGE_TAG: ${{ github.sha }}
       run: |
         cd api
-        docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        # Also tag as latest
-        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "🔨 Building Docker image..."
+        docker build --platform linux/amd64 -t $ECR_REPOSITORY:$IMAGE_TAG .
+        docker build --platform linux/amd64 -t $ECR_REPOSITORY:latest .
+        
+        if [[ "${{ steps.aws-creds.outcome }}" == "success" ]]; then
+          echo "🚀 Pushing to ECR..."
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "✅ Successfully pushed to ECR"
+        else
+          echo "⚠️  AWS credentials not found - skipping ECR push"
+          echo "   Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to repository secrets"
+          echo "   Docker image built successfully: $ECR_REPOSITORY:$IMAGE_TAG"
+        fi
 
-    - name: Update deployment image
+    - name: Update deployment image (if pushed to ECR)
+      if: steps.aws-creds.outcome == 'success'
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: cryptospins-api
