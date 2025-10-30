@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job  
+metadata:
+  name: block-api-metrics
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: block-traffic
+        image: nicolaka/netshoot
+        command: 
+        - /bin/sh
+        - -c
+        - |
+          echo "Blocking API metrics to simulate API down..."
+          # Block traffic to the API service to simulate it being down
+          kubectl patch service cryptospins-api -p '{"spec":{"selector":{"app":"non-existent-app"}}}'
+          echo "API service traffic blocked. Alert should trigger in ~1-2 minutes."
+          sleep 300
+          echo "Restoring API service..."
+          kubectl patch service cryptospins-api -p '{"spec":{"selector":{"app":"cryptospins-api"}}}'
+          echo "API service restored."
+        securityContext:
+          runAsUser: 0
+      serviceAccountName: default
+      restartPolicy: Never
+  backoffLimit: 1

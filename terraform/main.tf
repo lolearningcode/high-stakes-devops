@@ -1,18 +1,5 @@
 # Main Terraform configuration file
-# Configure the AWS Provider
-terraform {
-  required_version = ">= 1.6.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-}
+# Provider configuration is now in backend.tf
 
 # Data source for current AWS account ID
 data "aws_caller_identity" "current" {}

@@ -1,0 +1,61 @@
+# Terraform Cloud Backend Configuration
+terraform {
+  cloud {
+    organization = "Push2Prod" # Replace with your Terraform Cloud organization
+    workspaces {
+      name = "cryptospins-prod" # Replace with your workspace name
+    }
+  }
+
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.20"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.10"
+    }
+  }
+}
+
+# AWS Provider Configuration
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = var.common_tags
+  }
+}
+
+# Kubernetes provider configuration
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
+}
+
+# Helm provider configuration 
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
+}
+
+# Data source for EKS cluster auth
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
+}

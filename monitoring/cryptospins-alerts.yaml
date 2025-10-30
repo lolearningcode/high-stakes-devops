@@ -87,6 +87,19 @@ spec:
         summary: "Large loss detected"
         description: "House has lost more than $10,000 in the last hour"
 
+  - name: cryptospins.monitoring.rules
+    rules:
+    - alert: DeadMansSwitch
+      expr: vector(1)
+      for: 0m
+      labels:
+        severity: info
+        service: cryptospins-monitoring
+        type: monitoring
+      annotations:
+        summary: "Dead man's switch - monitoring is alive"
+        description: "This alert fires continuously. If you stop receiving it, monitoring system is down."
+        
   - name: cryptospins.security.rules  
     rules:
     - alert: TooManyFailedRequests

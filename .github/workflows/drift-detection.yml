@@ -1,0 +1,213 @@
+name: 🔍 Terraform Drift Detection
+
+on:
+  schedule:
+    # Run drift detection every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  TF_VERSION: "1.6.0"
+  AWS_REGION: "us-east-1"
+
+jobs:
+  drift-detection:
+    name: 🔍 Detect Infrastructure Drift
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::269599744150:role/github-actions-terraform-role
+          role-session-name: GitHubActions-DriftDetection
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: 🏗️ Terraform Init
+        run: |
+          cd terraform
+          terraform init
+      
+      - name: 🔍 Terraform Plan (Drift Check)
+        id: drift-check
+        run: |
+          cd terraform
+          terraform plan -detailed-exitcode -no-color -out=drift-check.tfplan
+        continue-on-error: true
+      
+      - name: 📊 Analyze Drift
+        id: analyze
+        run: |
+          cd terraform
+          
+          if [ ${{ steps.drift-check.outputs.exitcode }} -eq 0 ]; then
+            echo "✅ No drift detected - infrastructure matches configuration"
+            echo "drift_status=no-drift" >> $GITHUB_OUTPUT
+          elif [ ${{ steps.drift-check.outputs.exitcode }} -eq 2 ]; then
+            echo "⚠️ DRIFT DETECTED - infrastructure has diverged from configuration"
+            echo "drift_status=drift-detected" >> $GITHUB_OUTPUT
+            
+            # Extract drift details
+            terraform show -no-color drift-check.tfplan > drift-details.txt
+            echo "📄 Drift details saved to drift-details.txt"
+          else
+            echo "❌ Error running drift detection"
+            echo "drift_status=error" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: 🚨 Create Drift Alert Issue
+        if: steps.analyze.outputs.drift_status == 'drift-detected'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const driftDetails = fs.readFileSync('terraform/drift-details.txt', 'utf8');
+            
+            const issueTitle = `🚨 Infrastructure Drift Detected - ${new Date().toISOString().split('T')[0]}`;
+            const issueBody = `## 🚨 Infrastructure Drift Alert
+            
+            **Drift detected at:** ${new Date().toISOString()}
+            
+            ### 📋 Summary
+            Terraform has detected that the actual AWS infrastructure has diverged from the expected configuration defined in code.
+            
+            ### 🔍 Drift Details
+            \`\`\`terraform
+            ${driftDetails.substring(0, 5000)}${driftDetails.length > 5000 ? '\n... (truncated)' : ''}
+            \`\`\`
+            
+            ### 🛠️ Recommended Actions
+            1. **Review the drift details** above to understand what changed
+            2. **Check AWS Console** for any manual changes made outside of Terraform
+            3. **Update Terraform configuration** if the changes should be permanent
+            4. **Run \`terraform apply\`** to restore infrastructure to desired state
+            
+            ### 🔗 Useful Links
+            - [Terraform Cloud Workspace](https://app.terraform.io/app/Push2Prod/workspaces/cryptospins-prod)
+            - [AWS Console](https://console.aws.amazon.com/)
+            - [Infrastructure Repository](https://github.com/lolearningcode/high-stakes-devops/tree/main/terraform)
+            
+            ---
+            *This issue was automatically created by the drift detection workflow.*`;
+            
+            // Check if there's already an open drift issue
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['infrastructure', 'drift', 'automated']
+            });
+            
+            if (existingIssues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['infrastructure', 'drift', 'automated', 'high-priority']
+              });
+              console.log('🚨 Created new drift alert issue');
+            } else {
+              console.log('📋 Drift issue already exists, updating existing issue');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssues.data[0].number,
+                body: `## 🔄 Additional Drift Detected\n\n**Time:** ${new Date().toISOString()}\n\n\`\`\`terraform\n${driftDetails.substring(0, 3000)}${driftDetails.length > 3000 ? '\n... (truncated)' : ''}\n\`\`\``
+              });
+            }
+
+  compliance-scan:
+    name: 🛡️ Security & Compliance Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: 🔒 Run tfsec Security Scan
+        uses: aquasecurity/tfsec-sarif-action@v0.1.4
+        with:
+          sarif_file: tfsec-results.sarif
+          working_directory: terraform
+          additional_args: --soft-fail
+      
+      - name: 📊 Upload tfsec Results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: tfsec-results.sarif
+      
+      - name: 🔍 Run Checkov Compliance Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          soft_fail: true
+      
+      - name: 📊 Upload Checkov Results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+      
+      - name: 🏛️ Run Terrascan Policy Scan
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: 'terraform'
+          iac_version: 'v14'
+          policy_type: 'aws'
+          only_warn: true
+          sarif_upload: true
+          iac_dir: terraform/
+
+  notify-results:
+    name: 📢 Notify Results
+    needs: [drift-detection, compliance-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: 📢 Summary Report
+        run: |
+          echo "## 🔍 Infrastructure Health Report"
+          echo ""
+          
+          if [ "${{ needs.drift-detection.result }}" = "success" ]; then
+            echo "✅ **Drift Detection:** No drift detected"
+          else
+            echo "⚠️ **Drift Detection:** Issues found - check logs"
+          fi
+          
+          if [ "${{ needs.compliance-scan.result }}" = "success" ]; then
+            echo "✅ **Security Scan:** Passed"
+          else
+            echo "⚠️ **Security Scan:** Issues found - check Security tab"
+          fi
+          
+          echo ""
+          echo "🔗 **Links:**"
+          echo "- [Security Alerts](https://github.com/${{ github.repository }}/security)"
+          echo "- [Terraform Cloud](https://app.terraform.io/app/Push2Prod/workspaces/cryptospins-prod)"
+          echo "- [AWS Console](https://console.aws.amazon.com/)"
