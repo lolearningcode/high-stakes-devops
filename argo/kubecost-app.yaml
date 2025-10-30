@@ -1,0 +1,121 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubecost
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kubecost
+    app.kubernetes.io/part-of: monitoring
+    managed-by: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://kubecost.github.io/cost-analyzer
+    chart: cost-analyzer
+    targetRevision: 1.108.1
+    helm:
+      values: |
+        # Kubecost configuration for cost optimization
+        global:
+          aws:
+            region: us-east-1
+          currencyCode: USD
+          cluster:
+            name: high-stakes-devops-eks
+        
+        # Frontend configuration with resource limits
+        kubecostFrontend:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        
+        # Cost model configuration
+        kubecostModel:
+          spotDataFeed: true
+          awsRegion: us-east-1
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 800m
+              memory: 2Gi
+        
+        # Lightweight Prometheus setup
+        prometheus:
+          server:
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: 1000m
+                memory: 2Gi
+            retention: "7d"
+            persistentVolume:
+              size: 8Gi
+              storageClass: "gp3"
+          alertmanager:
+            enabled: false
+          pushgateway:
+            enabled: false
+        
+        # Service configuration
+        service:
+          type: ClusterIP
+          port: 9090
+        
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          fsGroup: 1001
+        
+        # Pod labels for cost attribution
+        podLabels:
+          app: kubecost
+          cost-monitoring: enabled
+          component: cost-analyzer
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kubecost
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health checks
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP
+
+  # Application info
+  info:
+    - name: "Real-time Cost Monitoring"
+      value: "Track cluster costs by namespace, workload, and resource"
+    - name: "Dashboard Access"
+      value: "kubectl port-forward -n kubecost svc/kubecost-cost-analyzer 9090:9090"
+    - name: "Documentation"
+      value: "https://docs.kubecost.com/"

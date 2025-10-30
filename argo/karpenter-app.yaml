@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/part-of: infrastructure
+    managed-by: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://karpenter.sh
+    chart: karpenter
+    targetRevision: v0.37.0
+    helm:
+      values: |
+        # Karpenter configuration values
+        serviceAccount:
+          annotations:
+            eks.amazonaws.com/role-arn: "arn:aws:iam::269599744150:role/high-stakes-devops-eks-karpenter-controller"
+        
+        controller:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+        
+        # AWS configuration
+        aws:
+          clusterName: high-stakes-devops-eks
+          interruptionQueueName: high-stakes-devops-eks-karpenter-interruption-queue
+          nodeClassRef:
+            name: default-nodeclass
+        
+        # Logging
+        logLevel: info
+        
+        # Metrics
+        webhook:
+          enabled: true
+          port: 8443
+        
+        # Pod disruption budget
+        podDisruptionBudget:
+          name: karpenter
+          maxUnavailable: 1
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health check
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    
+  # Refresh every 3 minutes
+  info:
+    - name: "Cost Optimization"
+      value: "Intelligent node provisioning and spot instance management"
+    - name: "Documentation" 
+      value: "https://karpenter.sh/docs/"
