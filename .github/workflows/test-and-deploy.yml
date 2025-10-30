@@ -6,11 +6,15 @@ on:
     paths: 
       - 'api/**'
       - '.github/workflows/**'
+      - 'monitoring/**'
+      - 'argo/**'
   pull_request:
     branches: [ main ]
     paths:
       - 'api/**'
       - '.github/workflows/**'
+      - 'monitoring/**'
+      - 'argo/**'
 
 jobs:
   test:
