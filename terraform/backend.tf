@@ -1,10 +1,14 @@
-# Terraform Cloud Backend Configuration
+# S3 Backend Configuration (No Terraform Cloud account needed!)
+# Note: For initial setup, comment out the backend block and run terraform init
+# Then create the S3 bucket and DynamoDB table, then uncomment and run terraform init again
+
 terraform {
-  cloud {
-    organization = "Push2Prod" # Replace with your Terraform Cloud organization
-    workspaces {
-      name = "cryptospins-prod" # Replace with your workspace name
-    }
+  backend "s3" {
+    bucket         = "cryptospins-terraform-state-269599744150" # Include account ID for uniqueness
+    key            = "cryptospins/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "cryptospins-terraform-locks"
   }
 
   required_version = ">= 1.6.0"
@@ -46,16 +50,17 @@ provider "kubernetes" {
   }
 }
 
-# Helm provider configuration 
+# Helm provider configuration
+# Uses the same authentication method as the Kubernetes provider
 provider "helm" {
   kubernetes {
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-    token                  = data.aws_eks_cluster_auth.cluster.token
-  }
-}
 
-# Data source for EKS cluster auth
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    }
+  }
 }
