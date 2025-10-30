@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from typing import Dict, Optional
 import uuid
@@ -153,7 +154,7 @@ async def get_stats():
         "active_users": len(user_balances)
     }
 
-@app.get("/metrics")
+@app.get("/metrics", response_class=PlainTextResponse)
 async def get_metrics():
     """Prometheus-style metrics endpoint"""
     stats = await get_stats()
