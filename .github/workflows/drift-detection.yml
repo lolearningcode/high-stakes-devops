@@ -2,8 +2,8 @@ name: 🔍 Terraform Drift Detection
 
 on:
   schedule:
-    # Run drift detection every 6 hours
-    - cron: '0 */6 * * *'
+    # Run drift detection once daily at 2 AM UTC to avoid conflicts
+    - cron: '0 2 * * *'
   workflow_dispatch:  # Allow manual trigger
 
 env:
@@ -39,7 +39,7 @@ jobs:
       - name: 🏗️ Terraform Init
         run: |
           cd terraform
-          terraform init
+          terraform init -reconfigure
       
       - name: 🔍 Terraform Plan (Drift Check)
         id: drift-check
@@ -98,9 +98,9 @@ jobs:
             4. **Run \`terraform apply\`** to restore infrastructure to desired state
             
             ### 🔗 Useful Links
-            - [Terraform Cloud Workspace](https://app.terraform.io/app/Push2Prod/workspaces/cryptospins-prod)
             - [AWS Console](https://console.aws.amazon.com/)
             - [Infrastructure Repository](https://github.com/lolearningcode/high-stakes-devops/tree/main/terraform)
+            - [Terraform S3 State Bucket](https://s3.console.aws.amazon.com/s3/buckets/cryptospins-terraform-state-269599744150)
             
             ---
             *This issue was automatically created by the drift detection workflow.*`;
@@ -208,5 +208,5 @@ jobs:
           echo ""
           echo "🔗 **Links:**"
           echo "- [Security Alerts](https://github.com/${{ github.repository }}/security)"
-          echo "- [Terraform Cloud](https://app.terraform.io/app/Push2Prod/workspaces/cryptospins-prod)"
           echo "- [AWS Console](https://console.aws.amazon.com/)"
+          echo "- [Terraform State Bucket](https://s3.console.aws.amazon.com/s3/buckets/cryptospins-terraform-state-269599744150)"
