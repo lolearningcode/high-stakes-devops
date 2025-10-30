@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cryptospins-api-metrics
+  namespace: monitoring
+  labels:
+    app: cryptospins-api
+    release: kube-prom  
+spec:
+  selector:
+    matchLabels:
+      app: cryptospins-api
+  namespaceSelector:
+    matchNames:
+    - default  
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /metrics
+    scheme: http
+    scrapeTimeout: 10s
+    honorLabels: true
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      targetLabel: service
+      replacement: cryptospins-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cryptospins-api-metrics
+  namespace: default
+  labels:
+    app: cryptospins-api
+    metrics: "true"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: cryptospins-api

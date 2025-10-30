@@ -1,0 +1,472 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cryptospins-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  cryptospins-dashboard.json: |-
+    {
+      "dashboard": {
+        "id": null,
+        "uid": "cryptospins-api",
+        "title": "CryptoSpins API Dashboard",
+        "description": "Real-time monitoring of CryptoSpins gambling API",
+        "tags": ["cryptospins", "api", "gambling", "monitoring"],
+        "style": "dark",
+        "timezone": "browser",
+        "refresh": "30s",
+        "graphTooltip": 0,
+        "time": {
+          "from": "now-30m",
+          "to": "now"
+        },
+        "timepicker": {},
+        "templating": {
+          "list": []
+        },
+        "annotations": {
+          "list": []
+        },
+        "schemaVersion": 37,
+        "version": 1,
+        "links": [],
+        "panels": [
+          {
+            "id": 1,
+            "title": "API Health Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=\"cryptospins-api-metrics\"}",
+                "refId": "A",
+                "legendFormat": "API Status"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "red",
+                        "text": "DOWN"
+                      },
+                      "1": {
+                        "color": "green", 
+                        "text": "UP"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 0,
+              "y": 0
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "center",
+              "orientation": "horizontal"
+            }
+          },
+          {
+            "id": 2,
+            "title": "Total Bets Placed",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "cryptospins_total_bets",
+                "refId": "A",
+                "legendFormat": "Total Bets"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 100
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 6,
+              "y": 0
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "center"
+            }
+          },
+          {
+            "id": 3,
+            "title": "Current Win Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "cryptospins_win_rate * 100",
+                "refId": "A",
+                "legendFormat": "Win Rate %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "max": 100,
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 20
+                    },
+                    {
+                      "color": "green",
+                      "value": 25
+                    },
+                    {
+                      "color": "orange",
+                      "value": 40
+                    }
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 12,
+              "y": 0
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "center"
+            }
+          },
+          {
+            "id": 4,
+            "title": "Active Users",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "cryptospins_active_users",
+                "refId": "A",
+                "legendFormat": "Active Users"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 50
+                    },
+                    {
+                      "color": "red",
+                      "value": 100
+                    }
+                  ]
+                },
+                "unit": "short"
+              }
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 6,
+              "x": 18,
+              "y": 0
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "area",
+              "justifyMode": "center"
+            }
+          },
+          {
+            "id": 5,
+            "title": "Win/Loss Distribution",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "cryptospins_total_wins",
+                "refId": "A",
+                "legendFormat": "Wins"
+              },
+              {
+                "expr": "cryptospins_total_losses",
+                "refId": "B",
+                "legendFormat": "Losses"
+              }
+            ],
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 0,
+              "y": 4
+            },
+            "options": {
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "pieType": "pie",
+              "tooltip": {
+                "mode": "single"
+              },
+              "legend": {
+                "displayMode": "visible",
+                "placement": "bottom"
+              }
+            }
+          },
+          {
+            "id": 6,
+            "title": "Financial Overview",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "cryptospins_total_wagered",
+                "refId": "A",
+                "legendFormat": "Total Wagered"
+              },
+              {
+                "expr": "cryptospins_total_winnings", 
+                "refId": "B",
+                "legendFormat": "Total Winnings"
+              },
+              {
+                "expr": "cryptospins_house_edge * 100",
+                "refId": "C", 
+                "legendFormat": "House Edge %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "short"
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "Total Wagered"
+                  },
+                  "properties": [
+                    {
+                      "id": "unit",
+                      "value": "currencyUSD"
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "Total Winnings"
+                  },
+                  "properties": [
+                    {
+                      "id": "unit",
+                      "value": "currencyUSD"
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "House Edge %"
+                  },
+                  "properties": [
+                    {
+                      "id": "unit",
+                      "value": "percent"
+                    }
+                  ]
+                }
+              ]
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 8,
+              "y": 4
+            },
+            "options": {
+              "colorMode": "background",
+              "graphMode": "none",
+              "justifyMode": "auto",
+              "orientation": "vertical"
+            }
+          },
+          {
+            "id": 7,
+            "title": "Betting Activity",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "rate(cryptospins_total_bets[5m]) * 60",
+                "refId": "A",
+                "legendFormat": "Bets/min"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 10
+                    },
+                    {
+                      "color": "red",
+                      "value": 50
+                    }
+                  ]
+                },
+                "unit": "short",
+                "min": 0,
+                "max": 100
+              }
+            },
+            "gridPos": {
+              "h": 8,
+              "w": 8,
+              "x": 16,
+              "y": 4
+            },
+            "options": {
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true
+            }
+          },
+          {
+            "id": 8,
+            "title": "Betting Volume Over Time",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "cryptospins_total_wagered",
+                "refId": "A",
+                "legendFormat": "Total Wagered ($)"
+              },
+              {
+                "expr": "cryptospins_total_winnings",
+                "refId": "B", 
+                "legendFormat": "Total Winnings ($)"
+              }
+            ],
+            "gridPos": {
+              "h": 8,
+              "w": 24,
+              "x": 0,
+              "y": 12
+            },
+            "fieldConfig": {
+              "defaults": {
+                "unit": "currencyUSD",
+                "custom": {
+                  "drawStyle": "line",
+                  "lineInterpolation": "linear",
+                  "barAlignment": 0,
+                  "lineWidth": 2,
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "spanNulls": false,
+                  "insertNulls": false,
+                  "showPoints": "never",
+                  "pointSize": 5,
+                  "stacking": {
+                    "mode": "none",
+                    "group": "A"
+                  },
+                  "axisPlacement": "auto",
+                  "axisLabel": "",
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "vis": false
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                }
+              }
+            },
+            "options": {
+              "tooltip": {
+                "mode": "single"
+              },
+              "legend": {
+                "calcs": [],
+                "displayMode": "visible",
+                "placement": "bottom"
+              }
+            }
+          }
+        ]
+      }
+    }

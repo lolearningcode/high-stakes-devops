@@ -1,0 +1,375 @@
+{
+    "dashboard": {
+        "id": null,
+        "title": "CryptoSpins API Dashboard",
+        "tags": [
+            "cryptospins",
+            "api",
+            "gambling",
+            "monitoring"
+        ],
+        "style": "dark",
+        "timezone": "browser",
+        "refresh": "30s",
+        "time": {
+            "from": "now-1h",
+            "to": "now"
+        },
+        "timepicker": {},
+        "templating": {
+            "list": []
+        },
+        "annotations": {
+            "list": []
+        },
+        "schemaVersion": 27,
+        "version": 1,
+        "links": [],
+        "panels": [
+            {
+                "id": 1,
+                "title": "API Health Status",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "up{service=\"cryptospins-api\"}",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                            {
+                                "options": {
+                                    "0": {
+                                        "text": "DOWN"
+                                    },
+                                    "1": {
+                                        "text": "UP"
+                                    }
+                                },
+                                "type": "value"
+                            }
+                        ],
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "red",
+                                    "value": null
+                                },
+                                {
+                                    "color": "green",
+                                    "value": 1
+                                }
+                            ]
+                        },
+                        "unit": "short"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                }
+            },
+            {
+                "id": 2,
+                "title": "Total Bets Placed",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_bets_total",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "color": {
+                            "mode": "thresholds"
+                        },
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "blue",
+                                    "value": null
+                                }
+                            ]
+                        },
+                        "unit": "short"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 6,
+                    "y": 0
+                }
+            },
+            {
+                "id": 3,
+                "title": "Current Win Rate",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_win_rate",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "max": 1,
+                        "min": 0,
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "red",
+                                    "value": null
+                                },
+                                {
+                                    "color": "yellow",
+                                    "value": 0.2
+                                },
+                                {
+                                    "color": "green",
+                                    "value": 0.25
+                                }
+                            ]
+                        },
+                        "unit": "percentunit"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 12,
+                    "y": 0
+                }
+            },
+            {
+                "id": 4,
+                "title": "Active Users",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_active_users",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "color": {
+                            "mode": "thresholds"
+                        },
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                }
+                            ]
+                        },
+                        "unit": "short"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 18,
+                    "y": 0
+                }
+            },
+            {
+                "id": 5,
+                "title": "Betting Volume Over Time",
+                "type": "graph",
+                "targets": [
+                    {
+                        "expr": "rate(cryptospins_bets_total[5m])",
+                        "refId": "A",
+                        "legendFormat": "Bets/sec"
+                    },
+                    {
+                        "expr": "rate(cryptospins_bet_amount_total[5m])",
+                        "refId": "B",
+                        "legendFormat": "Bet Volume/sec"
+                    }
+                ],
+                "yAxes": [
+                    {
+                        "label": "Rate",
+                        "show": true
+                    },
+                    {
+                        "show": true
+                    }
+                ],
+                "xAxis": {
+                    "show": true
+                },
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 4
+                },
+                "legend": {
+                    "show": true
+                }
+            },
+            {
+                "id": 6,
+                "title": "Win/Loss Distribution",
+                "type": "piechart",
+                "targets": [
+                    {
+                        "expr": "cryptospins_wins_total",
+                        "refId": "A",
+                        "legendFormat": "Wins"
+                    },
+                    {
+                        "expr": "cryptospins_losses_total",
+                        "refId": "B",
+                        "legendFormat": "Losses"
+                    }
+                ],
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 4
+                },
+                "options": {
+                    "pieType": "pie",
+                    "reduceOptions": {
+                        "values": false,
+                        "calcs": [
+                            "lastNotNull"
+                        ]
+                    }
+                }
+            },
+            {
+                "id": 7,
+                "title": "API Response Time",
+                "type": "graph",
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service=\"cryptospins-api\"}[5m]))",
+                        "refId": "A",
+                        "legendFormat": "95th percentile"
+                    },
+                    {
+                        "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{service=\"cryptospins-api\"}[5m]))",
+                        "refId": "B",
+                        "legendFormat": "50th percentile"
+                    }
+                ],
+                "yAxes": [
+                    {
+                        "label": "Response Time (s)",
+                        "show": true
+                    }
+                ],
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 12
+                }
+            },
+            {
+                "id": 8,
+                "title": "Total Profit/Loss",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_total_profit",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "red",
+                                    "value": null
+                                },
+                                {
+                                    "color": "green",
+                                    "value": 0
+                                }
+                            ]
+                        },
+                        "unit": "currency"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 12,
+                    "y": 12
+                }
+            },
+            {
+                "id": 9,
+                "title": "Error Rate",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "rate(http_requests_total{service=\"cryptospins-api\", status_code=~\"5..\"}[5m]) / rate(http_requests_total{service=\"cryptospins-api\"}[5m])",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "max": 1,
+                        "min": 0,
+                        "thresholds": {
+                            "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                },
+                                {
+                                    "color": "yellow",
+                                    "value": 0.01
+                                },
+                                {
+                                    "color": "red",
+                                    "value": 0.05
+                                }
+                            ]
+                        },
+                        "unit": "percentunit"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 18,
+                    "y": 12
+                }
+            },
+            {
+                "id": 10,
+                "title": "Balance Changes Over Time",
+                "type": "graph",
+                "targets": [
+                    {
+                        "expr": "cryptospins_balance_changes_total",
+                        "refId": "A",
+                        "legendFormat": "Total Balance Changes"
+                    }
+                ],
+                "gridPos": {
+                    "h": 8,
+                    "w": 24,
+                    "x": 0,
+                    "y": 20
+                }
+            }
+        ]
+    }
+}
