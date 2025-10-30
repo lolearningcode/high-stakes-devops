@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: 269599744150.dkr.ecr.us-east-1.amazonaws.com/cryptospins-api:27eee241b41af63011f45e396f89f5974751a36e
+        image: 269599744150.dkr.ecr.us-east-1.amazonaws.com/cryptospins-api:686e2f4e272ec05f16c4cb7a1a0de1aa5e41bda0
         ports:
         - containerPort: 8000
           name: http
