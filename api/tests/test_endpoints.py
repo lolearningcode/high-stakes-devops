@@ -204,18 +204,20 @@ class TestStatisticsEndpoints:
         response = client.get("/metrics")
         assert response.status_code == status.HTTP_200_OK
         
-        metrics_text = response.json()  # This will be a string
+        metrics_text = response.text  # Now returns plain text
         assert "cryptospins_total_bets" in metrics_text
         assert "cryptospins_total_wins" in metrics_text
         assert "cryptospins_win_rate" in metrics_text
         assert "cryptospins_active_users" in metrics_text
+        # Verify it's proper Prometheus format (metric_name value)
+        assert "cryptospins_total_bets 0" in metrics_text
     
     def test_metrics_endpoint_content_type(self, client):
         """Test that metrics endpoint returns correct content type"""
         response = client.get("/metrics")
-        # Note: FastAPI returns JSON by default, but in production
-        # Prometheus metrics should be text/plain
         assert response.status_code == status.HTTP_200_OK
+        # Should return text/plain for Prometheus metrics
+        assert response.headers["content-type"] == "text/plain; charset=utf-8"
 
 
 class TestInputValidation:
