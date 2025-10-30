@@ -148,3 +148,60 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# Karpenter Configuration
+variable "enable_karpenter" {
+  description = "Enable Karpenter for cluster auto-scaling"
+  type        = bool
+  default     = false
+}
+
+variable "karpenter_addon_version" {
+  description = "Version of the Karpenter EKS addon"
+  type        = string
+  default     = "v0.37.0-eksbuild.2"
+}
+
+variable "karpenter_node_disk_size" {
+  description = "Disk size in GB for Karpenter managed nodes"
+  type        = number
+  default     = 100
+}
+
+# Kubecost Configuration
+variable "enable_kubecost" {
+  description = "Enable Kubecost for cost monitoring"
+  type        = bool
+  default     = false
+}
+
+variable "kubecost_chart_version" {
+  description = "Version of the Kubecost Helm chart"
+  type        = string
+  default     = "1.108.1"
+}
+
+variable "enable_kubecost_spot_datacosts" {
+  description = "Enable spot instance cost data in Kubecost"
+  type        = bool
+  default     = true
+}
+
+variable "kubecost_currency_code" {
+  description = "Currency code for cost display in Kubecost"
+  type        = string
+  default     = "USD"
+}
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "enable_prometheus_integration" {
+  description = "Enable Prometheus integration for Kubecost"
+  type        = bool
+  default     = true
+}
+

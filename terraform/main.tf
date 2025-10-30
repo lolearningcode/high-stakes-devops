@@ -63,6 +63,19 @@ module "eks" {
   manage_aws_auth_configmap = var.manage_aws_auth_configmap
   aws_auth_users            = var.aws_auth_users
 
+  # Karpenter configuration
+  enable_karpenter         = var.enable_karpenter
+  karpenter_addon_version  = var.karpenter_addon_version
+  karpenter_node_disk_size = var.karpenter_node_disk_size
+
+  # Kubecost configuration
+  enable_kubecost                = var.enable_kubecost
+  kubecost_chart_version         = var.kubecost_chart_version
+  enable_kubecost_spot_datacosts = var.enable_kubecost_spot_datacosts
+  kubecost_currency_code         = var.kubecost_currency_code
+  enable_prometheus_integration  = var.enable_prometheus_integration
+  aws_region                     = var.aws_region
+
   tags = var.common_tags
 
   depends_on = [module.vpc]
@@ -87,4 +100,16 @@ resource "aws_eks_access_policy_association" "admin_user_policy" {
   }
 
   depends_on = [aws_eks_access_entry.admin_user]
+}
+
+# Karpenter IAM resources
+module "karpenter_iam" {
+  source = "./modules/iam"
+
+  cluster_name      = var.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_issuer       = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+  common_tags       = var.common_tags
+
+  depends_on = [module.eks]
 }

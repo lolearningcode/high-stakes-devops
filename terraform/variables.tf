@@ -124,11 +124,61 @@ variable "eks_managed_node_groups" {
 
 # Common tags for resources
 variable "common_tags" {
-  description = "Common tags to apply to all resources"
+  description = "Common tags to be applied to all resources"
   type        = map(string)
   default = {
     Environment = "dev"
     Project     = "high-stakes-devops"
     ManagedBy   = "terraform"
   }
+}
+
+# Karpenter Configuration
+variable "enable_karpenter" {
+  description = "Enable Karpenter for intelligent auto-scaling"
+  type        = bool
+  default     = true
+}
+
+variable "karpenter_addon_version" {
+  description = "Version of the Karpenter EKS addon"
+  type        = string
+  default     = "v0.37.0-eksbuild.2"
+}
+
+variable "karpenter_node_disk_size" {
+  description = "Disk size in GB for Karpenter managed nodes"
+  type        = number
+  default     = 100
+}
+
+# Kubecost Configuration
+variable "enable_kubecost" {
+  description = "Enable Kubecost for cost monitoring and optimization"
+  type        = bool
+  default     = true
+}
+
+variable "kubecost_chart_version" {
+  description = "Version of the Kubecost Helm chart"
+  type        = string
+  default     = "1.108.1"
+}
+
+variable "enable_kubecost_spot_datacosts" {
+  description = "Enable spot instance cost data tracking in Kubecost"
+  type        = bool
+  default     = true
+}
+
+variable "kubecost_currency_code" {
+  description = "Currency code for cost display (USD, EUR, etc.)"
+  type        = string
+  default     = "USD"
+}
+
+variable "enable_prometheus_integration" {
+  description = "Enable Prometheus integration with existing monitoring stack"
+  type        = bool
+  default     = true
 }
