@@ -8,7 +8,6 @@ metadata:
 data:
   cryptospins-dashboard.json: |-
     {
-      "dashboard": {
         "id": null,
         "uid": "cryptospins-api",
         "title": "CryptoSpins API Dashboard",
@@ -468,5 +467,4 @@ data:
             }
           }
         ]
-      }
     }

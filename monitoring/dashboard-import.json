@@ -1,0 +1,117 @@
+{
+    "dashboard": {
+        "id": null,
+        "uid": "cryptospins-api",
+        "title": "CryptoSpins API Dashboard",
+        "description": "Real-time monitoring of CryptoSpins gambling API",
+        "tags": [
+            "cryptospins",
+            "api",
+            "gambling",
+            "monitoring"
+        ],
+        "style": "dark",
+        "timezone": "browser",
+        "refresh": "30s",
+        "time": {
+            "from": "now-30m",
+            "to": "now"
+        },
+        "panels": [
+            {
+                "id": 1,
+                "title": "API Health Status",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "up{job=\"cryptospins-api-metrics\"}",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                            {
+                                "options": {
+                                    "0": {
+                                        "text": "DOWN",
+                                        "color": "red"
+                                    },
+                                    "1": {
+                                        "text": "UP",
+                                        "color": "green"
+                                    }
+                                },
+                                "type": "value"
+                            }
+                        ],
+                        "unit": "short"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                }
+            },
+            {
+                "id": 2,
+                "title": "Total Bets",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_total_bets",
+                        "refId": "A"
+                    }
+                ],
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 6,
+                    "y": 0
+                }
+            },
+            {
+                "id": 3,
+                "title": "Win Rate %",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_win_rate * 100",
+                        "refId": "A"
+                    }
+                ],
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percent"
+                    }
+                },
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 12,
+                    "y": 0
+                }
+            },
+            {
+                "id": 4,
+                "title": "Active Users",
+                "type": "stat",
+                "targets": [
+                    {
+                        "expr": "cryptospins_active_users",
+                        "refId": "A"
+                    }
+                ],
+                "gridPos": {
+                    "h": 4,
+                    "w": 6,
+                    "x": 18,
+                    "y": 0
+                }
+            }
+        ]
+    },
+    "overwrite": true
+}
